@@ -1,3 +1,6 @@
 #include <stdio.h>
 
-int main(void) { printf("hello shell"); }
+int main(void) {
+  printf("hello shell\n");
+  return 0;
+}
