@@ -7,16 +7,23 @@ char *cash_read_line(void);
 char **cash_parse_line(char *line);
 
 int main(void) {
-  printf("$ ");
-  char *lines = cash_read_line();
-  char **args = cash_parse_line(lines);
+  char *lines;
+  char **args;
+  int status = 1;
 
-  printf("$ args:\n");
-  for (size_t i = 0; args[i] != NULL; i++) {
-    printf("┝ %s\n", args[i]);
-  }
+  do {
+    printf("$ ");
+    lines = cash_read_line();
+    args = cash_parse_line(lines);
 
-  free(lines);
+    for (int i = 0; args[i] != NULL; i++) {
+      printf("%s\n", args[i]);
+    }
+
+    free(lines);
+    free(args);
+  } while (status);
+
   return 0;
 }
 
@@ -38,10 +45,11 @@ char *cash_read_line(void) {
   return buffer;
 }
 
+#define CASH_TOK_DELIM " \t\r\n\a"
 char **cash_parse_line(char *line) {
   char **tokens = NULL;
   size_t n = 0, cap = 0;
-  char *tok = strtok(line, " \t\r\n\a");
+  char *tok = strtok(line, CASH_TOK_DELIM);
 
   while (1) {
     if (n == cap) {
@@ -54,6 +62,6 @@ char **cash_parse_line(char *line) {
     if (tok == NULL) {
       return tokens;
     }
-    tok = strtok(NULL, " \t\r\n\a");
+    tok = strtok(NULL, CASH_TOK_DELIM);
   }
 }
