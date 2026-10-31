@@ -5,28 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-char *cash_read_line(void);
-char **cash_parse_line(char *line);
-int cash_launch(char **args);
-
-int main(void) {
-  char *line;
-  char **args;
-  int status = 1;
-
-  do {
-    printf("$ ");
-    fflush(stdout);
-    line = cash_read_line();
-    args = cash_parse_line(line);
-    status = cash_launch(args);
-
-    free(line);
-    free(args);
-  } while (status);
-
-  return 0;
-}
+#define CASH_TOK_DELIM " \t\r\n\a"
 
 char *cash_read_line(void) {
   size_t bufsize = 0;
@@ -38,15 +17,13 @@ char *cash_read_line(void) {
     if (feof(stdin)) {
       exit(EXIT_SUCCESS);
     } else {
-      perror("readline");
+      perror("cash");
       exit(EXIT_FAILURE);
     }
   }
 
   return buffer;
 }
-
-#define CASH_TOK_DELIM " \t\r\n\a"
 
 char **cash_parse_line(char *line) {
   char **tokens = NULL;
@@ -85,5 +62,24 @@ int cash_launch(char **args) {
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
   }
 
-  return 1;
+  return WEXITSTATUS(status);
+}
+
+int main(void) {
+  char *line;
+  char **args;
+  int status = 1;
+
+  do {
+    printf("$ ");
+    fflush(stdout);
+    line = cash_read_line();
+    args = cash_parse_line(line);
+    status = cash_launch(args);
+
+    free(line);
+    free(args);
+  } while (status);
+
+  return 0;
 }
