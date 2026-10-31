@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 char *cash_read_line(void);
 char **cash_parse_line(char *line);
+int cash_launch(char **args);
 
 int main(void) {
   char *lines;
@@ -13,12 +16,10 @@ int main(void) {
 
   do {
     printf("$ ");
+    fflush(stdout);
     lines = cash_read_line();
     args = cash_parse_line(lines);
-
-    for (int i = 0; args[i] != NULL; i++) {
-      printf("%s\n", args[i]);
-    }
+    status = cash_launch(args);
 
     free(lines);
     free(args);
@@ -46,6 +47,7 @@ char *cash_read_line(void) {
 }
 
 #define CASH_TOK_DELIM " \t\r\n\a"
+
 char **cash_parse_line(char *line) {
   char **tokens = NULL;
   size_t n = 0, cap = 0;
@@ -64,4 +66,24 @@ char **cash_parse_line(char *line) {
     }
     tok = strtok(NULL, CASH_TOK_DELIM);
   }
+}
+
+int cash_launch(char **args) {
+  int status;
+  pid_t pid = fork();
+
+  if (pid == 0) {
+    if (execvp(args[0], args) == -1) {
+      perror("cash");
+      exit(EXIT_FAILURE);
+    }
+  } else if (pid < 0) {
+    perror("cash");
+  } else {
+    do {
+      waitpid(pid, &status, WUNTRACED);
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  }
+
+  return 1;
 }
