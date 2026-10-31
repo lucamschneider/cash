@@ -10,18 +10,18 @@ char **cash_parse_line(char *line);
 int cash_launch(char **args);
 
 int main(void) {
-  char *lines;
+  char *line;
   char **args;
   int status = 1;
 
   do {
     printf("$ ");
     fflush(stdout);
-    lines = cash_read_line();
-    args = cash_parse_line(lines);
+    line = cash_read_line();
+    args = cash_parse_line(line);
     status = cash_launch(args);
 
-    free(lines);
+    free(line);
     free(args);
   } while (status);
 
