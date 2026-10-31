@@ -33,7 +33,13 @@ char **cash_parse_line(char *line) {
   while (1) {
     if (n == cap) {
       cap = (cap == 0) ? 64 : cap * 2;
-      tokens = realloc(tokens, cap * sizeof(char *));
+      char **tmp = realloc(tokens, cap * sizeof(char *));
+      if (tmp == NULL) {
+        free(tokens);
+        perror("cash");
+        exit(EXIT_FAILURE);
+      }
+      tokens = tmp;
     }
     tokens[n] = tok;
     n++;
@@ -46,6 +52,9 @@ char **cash_parse_line(char *line) {
 }
 
 int cash_launch(char **args) {
+  if (args[0] == NULL)
+    return 1;
+
   int status;
   pid_t pid = fork();
 
@@ -56,10 +65,17 @@ int cash_launch(char **args) {
     }
   } else if (pid < 0) {
     perror("cash");
+    return 1;
   } else {
+    pid_t ret;
     do {
-      waitpid(pid, &status, WUNTRACED);
-    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+      ret = waitpid(pid, &status, WUNTRACED);
+    } while (ret != -1 && !WIFEXITED(status) && !WIFSIGNALED(status));
+
+    if (ret == -1) {
+      perror("cash");
+      return 1;
+    }
   }
 
   return WEXITSTATUS(status);
