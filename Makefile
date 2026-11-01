@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address -std=c17
 
 cash: src/main.c
-	$(CC) $(CFLAGS) src/main.c -o $@
+	$(CC) $(CFLAGS) src/main.c src/builtins.c -o $@
 
 .PHONY: clean
 clean:

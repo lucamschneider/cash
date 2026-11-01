@@ -1,3 +1,4 @@
+#include "builtins.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +79,16 @@ int cash_launch(char **args) {
     }
   }
 
-  return WEXITSTATUS(status);
+  return 1;
+}
+
+int cash_execute(char **args) {
+  for (int i = 0; i < num_builtins; i++) {
+    if (strcmp(args[0], builtins[i].name) == 0) {
+      return builtins[i].fn(args);
+    }
+  }
+  return cash_launch(args);
 }
 
 int main(void) {
@@ -91,7 +101,7 @@ int main(void) {
     fflush(stdout);
     line = cash_read_line();
     args = cash_parse_line(line);
-    status = cash_launch(args);
+    status = cash_execute(args);
 
     free(line);
     free(args);
