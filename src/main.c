@@ -102,7 +102,11 @@ void cash_print_prompt() {
     return;
   }
 
-  printf("%s\n$ ", cwd);
+  if (isatty(STDOUT_FILENO)) {
+    printf("\033[1;32m%s\033[0m\n$ ", cwd);
+  } else {
+    printf("%s\n$ ", cwd);
+  }
   fflush(stdout);
 }
 
