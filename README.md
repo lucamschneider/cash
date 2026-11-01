@@ -4,7 +4,7 @@ A Unix shell written in C.
 
 ## Demo
 
-_GIF coming soon_
+![demo](demo.gif)
 
 ## Features
 
