@@ -1,4 +1,4 @@
-# cash — C Shell
+# cash - Cash Ain't SH
 
 A Unix shell written in C.
 
