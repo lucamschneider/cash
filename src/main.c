@@ -1,4 +1,5 @@
 #include "builtins.h"
+#include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,14 +95,24 @@ int cash_execute(char **args) {
   return cash_launch(args);
 }
 
+void cash_print_prompt() {
+  char cwd[PATH_MAX];
+  if (getcwd(cwd, sizeof(cwd)) == NULL) {
+    perror("cash");
+    return;
+  }
+
+  printf("%s\n$ ", cwd);
+  fflush(stdout);
+}
+
 int main(void) {
   char *line;
   char **args;
   int status = 1;
 
   do {
-    printf("$ ");
-    fflush(stdout);
+    cash_print_prompt();
     line = cash_read_line();
     args = cash_parse_line(line);
     status = cash_execute(args);
