@@ -1,4 +1,5 @@
 #include "builtins.h"
+#include <stdio.h>
 #include <unistd.h>
 
 int cash_exit(char **args) {
@@ -7,7 +8,9 @@ int cash_exit(char **args) {
 }
 
 int cash_cd(char **args) {
-  chdir(args[1]);
+  if (chdir(args[1]) != 0) {
+    perror("cash");
+  }
   return 1;
 }
 
