@@ -11,13 +11,13 @@
 #define COLOR_GRAY "\033[0;90m"
 #define COLOR_RESET "\033[0m"
 
-const char *cash_truncate_cwd(const char *cwd) {
+const char *cash_truncate_cwd(const char *cwd, int max_depth) {
   const char *start = cwd;
   int depth = 0;
   size_t len = strlen(cwd);
 
   for (size_t i = len; i > 0; i--) {
-    if (cwd[i] == '/' && ++depth == 3) {
+    if (cwd[i] == '/' && ++depth == max_depth) {
       start = cwd + i + 1;
       break;
     }
@@ -47,6 +47,19 @@ char *cash_get_gitbranch(void) {
   return strdup(branch);
 }
 
+void cash_format_cwd(const char *cwd, char *out, size_t out_size) {
+  const char *home = getenv("HOME");
+
+  if (home != NULL) {
+    size_t hlen = strlen(home);
+    if (strncmp(cwd, home, hlen) == 0) {
+      snprintf(out, out_size, "~%s", cwd + hlen);
+      return;
+    }
+  }
+  snprintf(out, out_size, "%s", cwd);
+}
+
 void cash_print_prompt(void) {
   char cwd[PATH_MAX];
   if (getcwd(cwd, sizeof(cwd)) == NULL) {
@@ -54,13 +67,17 @@ void cash_print_prompt(void) {
     return;
   }
 
-  const char *start = cash_truncate_cwd(cwd);
+  char display_cwd[PATH_MAX];
+  cash_format_cwd(cwd, display_cwd, sizeof(display_cwd));
+
+  char *branch = cash_get_gitbranch();
+  int max_depth = (branch != NULL) ? 1 : 3;
+  const char *start = cash_truncate_cwd(display_cwd, max_depth);
 
   if (isatty(STDOUT_FILENO)) {
     printf(COLOR_CWD "%s" COLOR_RESET " ", start);
-    char *branch = cash_get_gitbranch();
     if (branch != NULL) {
-      printf("on " COLOR_BRANCH "%s" COLOR_RESET, branch);
+      printf("on " COLOR_BRANCH " %s" COLOR_RESET, branch);
       free(branch);
     }
     printf("\n" COLOR_GRAY "╰" COLOR_RESET " $ ");
