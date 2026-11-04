@@ -1,6 +1,5 @@
 #include "builtins.h"
-#include <limits.h>
-#include <stddef.h>
+#include "prompt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,21 +92,6 @@ int cash_execute(char **args) {
     }
   }
   return cash_launch(args);
-}
-
-void cash_print_prompt() {
-  char cwd[PATH_MAX];
-  if (getcwd(cwd, sizeof(cwd)) == NULL) {
-    perror("cash");
-    return;
-  }
-
-  if (isatty(STDOUT_FILENO)) {
-    printf("\033[1;32m%s\033[0m\n$ ", cwd);
-  } else {
-    printf("%s\n$ ", cwd);
-  }
-  fflush(stdout);
 }
 
 int main(void) {
