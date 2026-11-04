@@ -1,12 +1,18 @@
 #include "prompt.h"
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-char *cash_truncate_cwd(char *cwd) {
-  char *start = cwd;
+#define COLOR_CWD "\033[1;33m"
+#define COLOR_BRANCH "\033[1;35m"
+#define COLOR_GRAY "\033[0;90m"
+#define COLOR_RESET "\033[0m"
+
+const char *cash_truncate_cwd(const char *cwd) {
+  const char *start = cwd;
   int depth = 0;
   size_t len = strlen(cwd);
 
@@ -19,11 +25,7 @@ char *cash_truncate_cwd(char *cwd) {
   return start;
 }
 
-char *cash_get_gitbranch() {
-  struct stat st;
-  if (stat(".git", &st) != 0)
-    return NULL;
-
+char *cash_get_gitbranch(void) {
   FILE *f = fopen(".git/HEAD", "r");
   if (f == NULL)
     return NULL;
@@ -55,12 +57,13 @@ void cash_print_prompt(void) {
   const char *start = cash_truncate_cwd(cwd);
 
   if (isatty(STDOUT_FILENO)) {
-    printf("\033[1;33m%s\033[0m ", start);
+    printf(COLOR_CWD "%s" COLOR_RESET " ", start);
     char *branch = cash_get_gitbranch();
     if (branch != NULL) {
-      printf("on \033[1;35m %s\033[0m", cash_get_gitbranch());
+      printf("on " COLOR_BRANCH "%s" COLOR_RESET, branch);
+      free(branch);
     }
-    printf("\n╰ $ ");
+    printf("\n" COLOR_GRAY "╰" COLOR_RESET " $ ");
   } else {
     printf("%s\n$ ", start);
   }
