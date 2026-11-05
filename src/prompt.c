@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #define COLOR_CWD "\033[1;33m"
@@ -25,10 +24,27 @@ const char *cash_truncate_cwd(const char *cwd, int max_depth) {
   return start;
 }
 
-char *cash_get_gitbranch(void) {
-  FILE *f = fopen(".git/HEAD", "r");
-  if (f == NULL)
-    return NULL;
+char *cash_get_gitbranch(const char *cwd, char *git_root, size_t root_size) {
+  char tmp[PATH_MAX];
+  strncpy(tmp, cwd, sizeof(tmp) - 1);
+  tmp[sizeof(tmp) - 1] = '\0';
+
+  FILE *f = NULL;
+  while (1) {
+    char githead[PATH_MAX];
+    snprintf(githead, sizeof(githead), "%s/.git/HEAD", tmp);
+    f = fopen(githead, "r");
+    if (f != NULL) {
+      strncpy(git_root, tmp, root_size - 1);
+      git_root[root_size - 1] = '\0';
+      break;
+    }
+
+    char *slash = strrchr(tmp, '/');
+    if (slash == NULL || slash == tmp)
+      return NULL;
+    *slash = '\0';
+  }
 
   char head[256];
   if (fgets(head, sizeof(head), f) == NULL) {
@@ -69,15 +85,17 @@ void cash_print_prompt(void) {
 
   char display_cwd[PATH_MAX];
   cash_format_cwd(cwd, display_cwd, sizeof(display_cwd));
-
-  char *branch = cash_get_gitbranch();
+  char git_root[PATH_MAX];
+  char *branch = cash_get_gitbranch(cwd, git_root, sizeof(git_root));
   int max_depth = (branch != NULL) ? 1 : 3;
   const char *start = cash_truncate_cwd(display_cwd, max_depth);
 
   if (isatty(STDOUT_FILENO)) {
     printf(COLOR_CWD "%s" COLOR_RESET " ", start);
     if (branch != NULL) {
-      printf("on " COLOR_BRANCH " %s" COLOR_RESET, branch);
+      printf("on " COLOR_BRANCH " %s " COLOR_RESET COLOR_GRAY
+             "[%s]" COLOR_RESET,
+             branch, git_root);
       free(branch);
     }
     printf("\n" COLOR_GRAY "╰" COLOR_RESET " $ ");
