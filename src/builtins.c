@@ -113,7 +113,7 @@ void cash_ls_print_border(ls_width_t *widths, border_pos_t pos) {
     }
     printf(COLOR_GRAY "─" COLOR_RESET);
   }
-  printf(COLOR_GRAY "%s\n" COLOR_RESET, corner_r);
+  printf(COLOR_GRAY "%s" COLOR_RESET "\n", corner_r);
 }
 
 int cash_ls(char **args) {

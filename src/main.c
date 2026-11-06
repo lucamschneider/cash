@@ -10,6 +10,22 @@
 
 int running = 1;
 
+char *cash_expand_operators(const char *line) {
+  char *out = malloc(strlen(line) * 3 + 1);
+  int j = 0;
+  for (int i = 0; line[i] != '\0'; i++) {
+    if (line[i] == ';') {
+      out[j++] = ' ';
+      out[j++] = ';';
+      out[j++] = ' ';
+    } else {
+      out[j++] = line[i];
+    }
+  }
+  out[j] = '\0';
+  return out;
+}
+
 char *cash_read_line(void) {
   size_t bufsize = 0;
   char *buffer = NULL;
@@ -84,8 +100,7 @@ int cash_launch(char **args) {
 
   return 0;
 }
-
-int cash_execute(char **args) {
+int cash_execute_cmd(char **args) {
   if (args[0] == NULL)
     return 0;
 
@@ -102,6 +117,20 @@ int cash_execute(char **args) {
   return cash_launch(args);
 }
 
+int cash_execute(char **args) {
+  char **cmd = args;
+
+  for (int i = 0; args[i] != NULL; i++) {
+    if (strcmp(args[i], ";") == 0) {
+      args[i] = NULL;
+      cash_execute_cmd(cmd);
+      cmd = args + i + 1;
+    }
+  }
+
+  return cash_execute_cmd(cmd);
+}
+
 int main(void) {
   char *line;
   char **args;
@@ -109,10 +138,12 @@ int main(void) {
   while (running) {
     cash_print_prompt();
     line = cash_read_line();
-    args = cash_parse_line(line);
+    char *expanded = cash_expand_operators(line);
+    args = cash_parse_line(expanded);
     cash_execute(args);
 
     free(line);
+    free(expanded);
     free(args);
   }
 
