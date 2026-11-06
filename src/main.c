@@ -8,6 +8,8 @@
 
 #define CASH_TOK_DELIM " \t\r\n\a"
 
+int running = 1;
+
 char *cash_read_line(void) {
   size_t bufsize = 0;
   char *buffer = NULL;
@@ -54,7 +56,7 @@ char **cash_parse_line(char *line) {
 
 int cash_launch(char **args) {
   if (args[0] == NULL)
-    return 1;
+    return 0;
 
   int status;
   pid_t pid = fork();
@@ -77,14 +79,15 @@ int cash_launch(char **args) {
       perror("cash");
       return 1;
     }
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
   }
 
-  return 1;
+  return 0;
 }
 
 int cash_execute(char **args) {
   if (args[0] == NULL)
-    return 1;
+    return 0;
 
   if (args[0][0] == '^') {
     args[0]++;
@@ -102,17 +105,16 @@ int cash_execute(char **args) {
 int main(void) {
   char *line;
   char **args;
-  int status = 1;
 
-  do {
+  while (running) {
     cash_print_prompt();
     line = cash_read_line();
     args = cash_parse_line(line);
-    status = cash_execute(args);
+    cash_execute(args);
 
     free(line);
     free(args);
-  } while (status);
+  }
 
   return 0;
 }

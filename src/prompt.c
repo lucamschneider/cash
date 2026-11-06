@@ -5,10 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define COLOR_CWD "\033[1;33m"
-#define COLOR_BRANCH "\033[1;35m"
-#define COLOR_GRAY "\033[0;90m"
-#define COLOR_RESET "\033[0m"
+#include "colors.h"
 
 const char *cash_truncate_cwd(const char *cwd, int max_depth) {
   const char *start = cwd;
