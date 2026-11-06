@@ -166,10 +166,27 @@ int cash_ls(char **args) {
   return 0;
 }
 
+int cash_help(char **args) {
+  (void)args;
+  printf(COLOR_LOGO_1 "                   __\n" COLOR_RESET);
+  printf(COLOR_LOGO_2 "  _________ ______/ /_\n" COLOR_RESET);
+  printf(COLOR_LOGO_3 " / ___/ __ `/ ___/ __ \\\n" COLOR_RESET);
+  printf(COLOR_LOGO_4 "/ /__/ /_/ (__  ) / / /\n" COLOR_RESET);
+  printf(COLOR_LOGO_5 "\\___/\\__,_/____/_/ /_/\n" COLOR_RESET);
+  printf(COLOR_GRAY "╰ $ Cash Ain't SH\n\n" COLOR_RESET);
+  printf("  cd [dir]   change directory (default: $HOME)\n");
+  printf("  ls [-a]    list directory contents\n");
+  printf("  help       show this help\n");
+  printf("  exit       exit cash\n");
+  printf("\n");
+  return 0;
+}
+
 builtin_t builtins[] = {
     {"cd", cash_cd},
     {"exit", cash_exit},
     {"ls", cash_ls},
+    {"help", cash_help},
 };
 
 int num_builtins = sizeof(builtins) / sizeof(builtins[0]);

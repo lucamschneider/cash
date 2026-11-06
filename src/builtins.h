@@ -16,5 +16,6 @@ extern int num_builtins;
 int cash_exit(char **args);
 int cash_cd(char **args);
 int cash_ls(char **args);
+int cash_help(char **args);
 
 #endif // CASH_BUILTINS_H
