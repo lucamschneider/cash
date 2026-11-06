@@ -7,6 +7,8 @@
 
 #include "colors.h"
 
+#define CWD_MAX_DEPTH 3
+
 const char *cash_truncate_cwd(const char *cwd, int max_depth) {
   const char *start = cwd;
   int depth = 0;
@@ -84,8 +86,19 @@ void cash_print_prompt(void) {
   cash_format_cwd(cwd, display_cwd, sizeof(display_cwd));
   char git_root[PATH_MAX];
   char *branch = cash_get_gitbranch(cwd, git_root, sizeof(git_root));
-  int max_depth = (branch != NULL) ? 1 : 3;
-  const char *start = cash_truncate_cwd(display_cwd, max_depth);
+
+  const char *start;
+
+  if (branch != NULL) {
+    const char *repo_name = strrchr(git_root, '/') + 1;
+    const char *rel = cwd + strlen(git_root);
+
+    snprintf(display_cwd, sizeof(display_cwd), "%s%s", repo_name, rel);
+    start = display_cwd;
+    start = cash_truncate_cwd(display_cwd, CWD_MAX_DEPTH);
+  } else {
+    start = cash_truncate_cwd(display_cwd, CWD_MAX_DEPTH);
+  }
 
   if (isatty(STDOUT_FILENO)) {
     printf(COLOR_CWD "%s" COLOR_RESET " ", start);
