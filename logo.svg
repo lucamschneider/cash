@@ -16,5 +16,7 @@
   </defs>
 
   <rect width="400" height="140" fill="url(#green)" mask="url(#mask)"/>
-  <text font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="13" fill="#fab387" x="30" y="155">Cash Ain&apos;t SH</text>
+  <text font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="13" x="30" y="155">
+    <tspan fill="#6c6f85">╰ $ </tspan><tspan fill="#fab387">Cash Ain&apos;t SH</tspan>
+  </text>
 </svg>
