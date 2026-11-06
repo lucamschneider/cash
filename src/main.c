@@ -83,9 +83,14 @@ int cash_launch(char **args) {
 }
 
 int cash_execute(char **args) {
-  if (args[0] == NULL) {
+  if (args[0] == NULL)
     return 1;
+
+  if (args[0][0] == '^') {
+    args[0]++;
+    return cash_launch(args);
   }
+
   for (int i = 0; i < num_builtins; i++) {
     if (strcmp(args[0], builtins[i].name) == 0) {
       return builtins[i].fn(args);
