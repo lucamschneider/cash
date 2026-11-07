@@ -100,6 +100,7 @@ int cash_launch(char **args) {
 
   return 0;
 }
+
 int cash_execute_cmd(char **args) {
   if (args[0] == NULL)
     return 0;

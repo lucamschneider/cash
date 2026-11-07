@@ -15,6 +15,11 @@
 #define SECS_PER_HOUR 3600
 #define SECS_PER_DAY 86400
 
+#define KB (1024LL)
+#define MB (1024LL * 1024)
+#define GB (1024LL * 1024 * 1024)
+#define TB (1024LL * 1024 * 1024 * 1024)
+
 typedef struct {
   int total;
   int row;
@@ -60,6 +65,19 @@ void cash_ls_get_widths(ls_width_t *widths, int entry_count, int cols) {
   widths->modified = available_width - widths->name - widths->size;
 }
 
+static void format_size(long long bytes, char *buf, int len) {
+  if (bytes < KB)
+    snprintf(buf, len, "%lld B", bytes);
+  else if (bytes < MB)
+    snprintf(buf, len, "%.1f KB", bytes / (double)KB);
+  else if (bytes < GB)
+    snprintf(buf, len, "%.1f MB", bytes / (double)MB);
+  else if (bytes < TB)
+    snprintf(buf, len, "%.1f GB", bytes / (double)GB);
+  else
+    snprintf(buf, len, "%.1f TB", bytes / (double)TB);
+}
+
 static void format_modified(time_t mtime, char *buf, int len) {
   time_t now = time(NULL);
   long diff = (long)difftime(now, mtime);
@@ -89,11 +107,13 @@ void cash_ls_print_row(struct dirent *entry, struct stat *st, ls_width_t widths,
                        int *row) {
   char time_buf[32];
   format_modified(get_mtime(st), time_buf, sizeof(time_buf));
+  char size_buf[32];
+  format_size((long long)st->st_size, size_buf, sizeof(size_buf));
 
   printf(COLOR_GRAY "│ %-*d │" COLOR_RESET " %-*s " COLOR_GRAY
-                    "│ %*lld │ %*s │" COLOR_RESET "\n",
+                    "│ %*s │ %*s │" COLOR_RESET "\n",
          widths.row, (*row)++, widths.name, entry->d_name, widths.size,
-         (long long)st->st_size, widths.modified, time_buf);
+         size_buf, widths.modified, time_buf);
 }
 
 void cash_ls_print_border(ls_width_t *widths, border_pos_t pos) {
