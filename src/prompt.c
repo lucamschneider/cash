@@ -94,18 +94,15 @@ void cash_print_prompt(void) {
     const char *rel = cwd + strlen(git_root);
 
     snprintf(display_cwd, sizeof(display_cwd), "%s%s", repo_name, rel);
-    start = display_cwd;
     start = cash_truncate_cwd(display_cwd, CWD_MAX_DEPTH);
   } else {
     start = cash_truncate_cwd(display_cwd, CWD_MAX_DEPTH);
   }
 
   if (isatty(STDOUT_FILENO)) {
-    printf(COLOR_CWD "%s" COLOR_RESET " ", start);
+    printf("\n" COLOR_CWD "%s" COLOR_RESET " ", start);
     if (branch != NULL) {
-      printf("on " COLOR_BRANCH " %s " COLOR_RESET COLOR_GRAY
-             "[%s]" COLOR_RESET,
-             branch, git_root);
+      printf("on " COLOR_BRANCH " %s " COLOR_RESET, branch);
       free(branch);
     }
     printf("\n" COLOR_GRAY "╰" COLOR_RESET " $ ");
