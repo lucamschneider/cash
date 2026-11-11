@@ -1,5 +1,6 @@
 #include "lineedit.h"
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
@@ -38,7 +39,7 @@ int cash_raw_disable(void) {
   return 0;
 }
 
-int read_key(void) {
+static int read_key(void) {
   char c;
   ssize_t n;
   do {
@@ -74,7 +75,7 @@ int read_key(void) {
   return '\x1b';
 }
 
-int editor_insert(LineEditor *e, char c) {
+static int editor_insert(LineEditor *e, char c) {
   if (e->len + 1 >= e->cap) {
     size_t newcap = e->cap ? e->cap * 2 : 16;
     char *tmp = realloc(e->buf, newcap);
@@ -89,32 +90,94 @@ int editor_insert(LineEditor *e, char c) {
   memmove(e->buf + e->cursor + 1, e->buf + e->cursor, e->len - e->cursor);
 
   e->buf[e->cursor] = c;
-  (e->cursor)++;
-
-  (e->len)++;
+  e->cursor++;
+  e->len++;
   e->buf[e->len] = '\0';
 
   return 0;
+}
+
+static int editor_backspace(LineEditor *e) {
+  if (e->cursor == 0)
+    return -1;
+
+  memmove(e->buf + e->cursor - 1, e->buf + e->cursor, e->len - e->cursor);
+
+  e->cursor--;
+  e->len--;
+  e->buf[e->len] = '\0';
+  return 0;
+}
+
+static void editor_left(LineEditor *e) {
+  if (e->cursor > 0)
+    (e->cursor)--;
+}
+
+static void editor_right(LineEditor *e) {
+  if (e->cursor < e->len)
+    (e->cursor)++;
+}
+
+static void refresh_line(LineEditor *e) {
+  char out[256];
+  int n = 0;
+
+  n += snprintf(out + n, sizeof(out) - n, "\r\x1b[K");
+  n += snprintf(out + n, sizeof(out) - n, "$ ");
+  n += snprintf(out + n, sizeof(out) - n, "%.*s", (int)e->len, e->buf);
+  n += snprintf(out + n, sizeof(out) - n, "\r\x1b[%zuC", (size_t)2 + e->cursor);
+
+  write(STDOUT_FILENO, out, n);
+}
+
+char *cash_read_line(void) {
+  LineEditor e = {0};
+
+  for (;;) {
+    refresh_line(&e);
+    int k = read_key();
+
+    switch (k) {
+    case '\r':
+      write(STDOUT_FILENO, "\r\n", 2);
+      return e.buf;
+
+    case -1:
+      free(e.buf);
+      return NULL;
+
+    case 127:
+    case 8:
+      editor_backspace(&e);
+      break;
+
+    case KEY_LEFT:
+      editor_left(&e);
+      break;
+
+    case KEY_RIGHT:
+      editor_right(&e);
+      break;
+
+    default:
+      if (k >= 32 && k < 127)
+        editor_insert(&e, (char)k);
+      break;
+    }
+  }
 }
 
 #ifdef LINEEDIT_TEST
 #include <stdio.h>
 
 int main(void) {
-  LineEditor e = {0};
+  cash_raw_enable();
+  char *line = cash_read_line();
+  cash_raw_disable();
 
-  editor_insert(&e, 'h');
-  editor_insert(&e, 'e');
-  editor_insert(&e, 'l');
-  editor_insert(&e, 'l');
-  editor_insert(&e, 'o');
-  printf("[%s] len= %zu cursor= %zu\n", e.buf, e.len, e.cursor);
-
-  e.cursor = 1;
-  editor_insert(&e, 'x');
-  printf("[%s] len= %zu cursor= %zu\n", e.buf, e.len, e.cursor);
-
-  free(e.buf);
+  printf("\ngot: [%s]\n", line ? line : "(null)");
+  free(line);
   return 0;
 }
 #endif

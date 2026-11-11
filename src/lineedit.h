@@ -10,6 +10,6 @@ enum {
 
 int cash_raw_enable(void);
 int cash_raw_disable(void);
-int read_key(void);
+char *cash_read_line(void);
 
 #endif // CASH_LINEEDIT_H
