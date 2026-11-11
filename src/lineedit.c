@@ -1,9 +1,18 @@
 #include "lineedit.h"
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
 static struct termios orig_termios;
+
+typedef struct {
+  char *buf;
+  size_t len;
+  size_t cap;
+  size_t cursor;
+} LineEditor;
 
 int cash_raw_enable(void) {
   if (tcgetattr(STDIN_FILENO, &orig_termios) != 0) {
@@ -64,3 +73,48 @@ int read_key(void) {
 
   return '\x1b';
 }
+
+int editor_insert(LineEditor *e, char c) {
+  if (e->len + 1 >= e->cap) {
+    size_t newcap = e->cap ? e->cap * 2 : 16;
+    char *tmp = realloc(e->buf, newcap);
+
+    if (!tmp)
+      return -1;
+
+    e->buf = tmp;
+    e->cap = newcap;
+  }
+
+  memmove(e->buf + e->cursor + 1, e->buf + e->cursor, e->len - e->cursor);
+
+  e->buf[e->cursor] = c;
+  (e->cursor)++;
+
+  (e->len)++;
+  e->buf[e->len] = '\0';
+
+  return 0;
+}
+
+#ifdef LINEEDIT_TEST
+#include <stdio.h>
+
+int main(void) {
+  LineEditor e = {0};
+
+  editor_insert(&e, 'h');
+  editor_insert(&e, 'e');
+  editor_insert(&e, 'l');
+  editor_insert(&e, 'l');
+  editor_insert(&e, 'o');
+  printf("[%s] len= %zu cursor= %zu\n", e.buf, e.len, e.cursor);
+
+  e.cursor = 1;
+  editor_insert(&e, 'x');
+  printf("[%s] len= %zu cursor= %zu\n", e.buf, e.len, e.cursor);
+
+  free(e.buf);
+  return 0;
+}
+#endif
