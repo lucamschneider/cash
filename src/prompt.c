@@ -105,7 +105,7 @@ void cash_print_prompt_header(void) {
       printf("on " COLOR_BRANCH " %s " COLOR_RESET, branch);
       free(branch);
     }
-    printf("\n" COLOR_GRAY "╰" COLOR_RESET " $ ");
+    printf("\n");
   } else {
     printf("%s\n$ ", start);
   }
