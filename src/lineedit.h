@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #ifndef CASH_LINEEDIT_H
 #define CASH_LINEEDIT_H
 
@@ -10,6 +12,6 @@ enum {
 
 int cash_raw_enable(void);
 int cash_raw_disable(void);
-char *cash_read_line(void);
+char *cash_read_line(const char *prompt, size_t prompt_width);
 
 #endif // CASH_LINEEDIT_H

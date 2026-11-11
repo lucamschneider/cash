@@ -10,9 +10,9 @@ static struct termios orig_termios;
 
 typedef struct {
   char *buf;
-  size_t len;
-  size_t cap;
-  size_t cursor;
+  size_t len, cap, cursor;
+  const char *prompt;
+  size_t prompt_width;
 } LineEditor;
 
 int cash_raw_enable(void) {
@@ -124,17 +124,20 @@ static void refresh_line(LineEditor *e) {
   int n = 0;
 
   n += snprintf(out + n, sizeof(out) - n, "\r\x1b[K");
-  n += snprintf(out + n, sizeof(out) - n, "$ ");
+  n += snprintf(out + n, sizeof(out) - n, "%s", e->prompt);
   n += snprintf(out + n, sizeof(out) - n, "%.*s", (int)e->len, e->buf);
-  n += snprintf(out + n, sizeof(out) - n, "\r\x1b[%zuC", (size_t)2 + e->cursor);
+  n += snprintf(out + n, sizeof(out) - n, "\r\x1b[%zuC",
+                e->prompt_width + e->cursor);
 
   write(STDOUT_FILENO, out, n);
 }
 
-char *cash_read_line(void) {
+char *cash_read_line(const char *prompt, size_t prompt_width) {
   cash_raw_enable();
 
   LineEditor e = {0};
+  e.prompt = prompt;
+  e.prompt_width = prompt_width;
 
   for (;;) {
     refresh_line(&e);
@@ -150,6 +153,12 @@ char *cash_read_line(void) {
       free(e.buf);
       cash_raw_disable();
       return NULL;
+
+    case 3: // ctrl c
+      write(STDOUT_FILENO, "\r\n", 2);
+      free(e.buf);
+      cash_raw_disable();
+      return strdup("");
 
     case 127:
     case 8:

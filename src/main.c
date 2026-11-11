@@ -1,4 +1,5 @@
 #include "builtins.h"
+#include "colors.h"
 #include "lineedit.h"
 #include "prompt.h"
 #include <stdio.h>
@@ -120,10 +121,15 @@ int main(void) {
   char **args;
 
   while (running) {
-    // cash_print_prompt();
-    line = cash_read_line();
+    cash_print_prompt_header();
+    line = cash_read_line(COLOR_GRAY "╰" COLOR_RESET " $ ", 4);
     if (line == NULL)
       break;
+
+    if (strcmp(line, "") == 0) {
+      free(line);
+      continue;
+    }
 
     char *expanded = cash_expand_operators(line);
     args = cash_parse_line(expanded);

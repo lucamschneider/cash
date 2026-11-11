@@ -75,7 +75,7 @@ void cash_format_cwd(const char *cwd, char *out, size_t out_size) {
   snprintf(out, out_size, "%s", cwd);
 }
 
-void cash_print_prompt(void) {
+void cash_print_prompt_header(void) {
   char cwd[PATH_MAX];
   if (getcwd(cwd, sizeof(cwd)) == NULL) {
     perror("cash");
