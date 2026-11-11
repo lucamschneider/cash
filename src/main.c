@@ -1,4 +1,5 @@
 #include "builtins.h"
+#include "lineedit.h"
 #include "prompt.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,24 +25,6 @@ char *cash_expand_operators(const char *line) {
   }
   out[j] = '\0';
   return out;
-}
-
-char *cash_read_line(void) {
-  size_t bufsize = 0;
-  char *buffer = NULL;
-
-  ssize_t n = getline(&buffer, &bufsize, stdin);
-
-  if (n == -1) {
-    if (feof(stdin)) {
-      exit(EXIT_SUCCESS);
-    } else {
-      perror("cash");
-      exit(EXIT_FAILURE);
-    }
-  }
-
-  return buffer;
 }
 
 char **cash_parse_line(char *line) {
@@ -137,8 +120,11 @@ int main(void) {
   char **args;
 
   while (running) {
-    cash_print_prompt();
+    // cash_print_prompt();
     line = cash_read_line();
+    if (line == NULL)
+      break;
+
     char *expanded = cash_expand_operators(line);
     args = cash_parse_line(expanded);
     cash_execute(args);

@@ -132,6 +132,8 @@ static void refresh_line(LineEditor *e) {
 }
 
 char *cash_read_line(void) {
+  cash_raw_enable();
+
   LineEditor e = {0};
 
   for (;;) {
@@ -141,10 +143,12 @@ char *cash_read_line(void) {
     switch (k) {
     case '\r':
       write(STDOUT_FILENO, "\r\n", 2);
+      cash_raw_disable();
       return e.buf;
 
     case -1:
       free(e.buf);
+      cash_raw_disable();
       return NULL;
 
     case 127:
